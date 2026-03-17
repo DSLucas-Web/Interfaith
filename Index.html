@@ -1,0 +1,807 @@
+<!-- Interfaith – Comparative Religion Explorer (Blogger + WebLLM Phi-2) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Interfaith – Comparative Religion Explorer</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f5f5f7;
+      color: #222;
+    }
+    body.dark {
+      background: #111827;
+      color: #e5e7eb;
+    }
+    .page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 24px 16px 48px;
+    }
+    h1 {
+      font-size: 1.9rem;
+      margin-bottom: 0.25rem;
+    }
+    p.lead {
+      margin-top: 0;
+      color: #555;
+    }
+    body.dark p.lead {
+      color: #9ca3af;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      padding: 16px 18px 18px;
+      margin-top: 16px;
+    }
+    body.dark .card {
+      background: #1f2937;
+      color: #e5e7eb;
+    }
+    .card-header {
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .input-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .query-input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 0.95rem;
+    }
+    body.dark .query-input {
+      background: #111827;
+      border-color: #4b5563;
+      color: #e5e7eb;
+    }
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid #ccc;
+      font-size: 0.8rem;
+      cursor: pointer;
+      background: #fafafa;
+      user-select: none;
+    }
+    .pill.selected {
+      background: #1d4ed8;
+      color: #fff;
+      border-color: #1d4ed8;
+    }
+    .pill:hover {
+      background: #e0e7ff;
+      border-color: #c7d2fe;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+    .pill.selected:hover {
+      background: #1e40af;
+      border-color: #1e40af;
+      color: #fff;
+    }
+    body.dark .pill {
+      background: #374151;
+      border-color: #4b5563;
+      color: #e5e7eb;
+    }
+    body.dark .pill.selected {
+      background: #2563eb;
+      border-color: #2563eb;
+      color: #fff;
+    }
+    .toggle-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .toggle input {
+      cursor: pointer;
+    }
+    .btn-row {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    button.primary {
+      background: #1d4ed8;
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 8px 16px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    button.primary:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+    body.dark button.primary {
+      background: #2563eb;
+    }
+    .status {
+      margin-top: 6px;
+      font-size: 0.8rem;
+      color: #555;
+      display: none;
+    }
+    body.dark .status {
+      color: #9ca3af;
+    }
+    .results {
+      margin-top: 20px;
+    }
+    .religion-card {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid #e5e7eb;
+    }
+    body.dark .religion-card {
+      border-top-color: #374151;
+    }
+    .religion-name {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .section-label {
+      font-weight: 600;
+      font-size: 0.85rem;
+      margin-top: 6px;
+      margin-bottom: 2px;
+    }
+    .section-text {
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin: 0 0 4px;
+    }
+    ul.compact {
+      margin: 2px 0 4px 18px;
+      padding: 0;
+      font-size: 0.9rem;
+    }
+    ul.compact li {
+      margin-bottom: 2px;
+    }
+    .fade-in {
+      opacity: 0;
+      transform: translateY(6px);
+      animation: fadeIn 0.35s ease forwards;
+    }
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    #whyPopup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      max-width: 400px;
+      display: none;
+      z-index: 9999;
+    }
+    #whyPopup.dark {
+      background: #1f2937;
+      color: #e5e7eb;
+    }
+    @media (max-width: 640px) {
+      .page {
+        padding: 16px 10px 32px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+  <h1>Interfaith – Comparative Religion Explorer</h1>
+  <p class="lead">
+    Ask a question and see how multiple traditions approach the same topic, side by side.
+  </p>
+
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+      <div class="card-header">Your question</div>
+      <button id="darkModeToggle" class="primary" style="padding:4px 10px;font-size:0.8rem;">Dark mode</button>
+    </div>
+    <textarea id="queryInput" class="query-input" rows="2"
+      placeholder="For example: What do different religions teach about forgiveness, non-violence, or the soul?"></textarea>
+
+    <h2 style="font-size:1rem;margin-top:12px;display:flex;align-items:center;gap:6px;">
+      Traditions to include
+      <span id="whyBtn" style="font-size:0.8rem; color:#1d4ed8; cursor:pointer;">
+        Why these?
+      </span>
+    </h2>
+    <div id="religionPills" class="pill-row"></div>
+
+    <h2 style="font-size:1rem;margin-top:12px;">Depth & sections</h2>
+    <div class="toggle-row">
+      <label class="toggle">
+        <input type="checkbox" id="toggleHistorical" checked />
+        <span>Historical background</span>
+      </label>
+      <label class="toggle">
+        <input type="checkbox" id="toggleCultural" checked />
+        <span>Cultural context</span>
+      </label>
+      <label class="toggle">
+        <input type="checkbox" id="toggleRational" checked />
+        <span>Rational explanation</span>
+      </label>
+      <label class="toggle">
+        <input type="checkbox" id="toggleDenoms" checked />
+        <span>Denominational variations</span>
+      </label>
+      <label class="toggle">
+        <input type="checkbox" id="toggleSymbolic" checked />
+        <span>Symbolic meaning</span>
+      </label>
+      <label class="toggle">
+        <input type="checkbox" id="toggleModern" checked />
+        <span>Modern perspectives</span>
+      </label>
+    </div>
+
+    <div class="btn-row">
+      <button id="exploreBtn" class="primary">Explore this topic</button>
+      <span id="statusArea" class="status"></span>
+    </div>
+  </div>
+
+  <div id="resultsArea" class="results"></div>
+</div>
+
+<div id="whyPopup">
+  <h3>Why these traditions?</h3>
+  <p>
+    Interfaith includes major world religions that have well‑documented teachings,
+    global communities, and rich textual traditions. These traditions offer diverse
+    perspectives on ethics, spirituality, and human purpose, making them ideal for
+    comparative study.
+  </p>
+  <button id="closeWhy" class="primary" style="margin-top:8px;">Close</button>
+</div>
+
+<!-- WebLLM from CDN -->
+<script src="https://unpkg.com/@mlc-ai/web-llm/dist/web-llm.min.js"></script>
+
+<script>
+  // --- System prompt ---
+  const systemPrompt = `
+You are Interfaith, a neutral, scholarly, and respectful explainer of religious beliefs, values, rituals, and concepts across multiple traditions.
+
+GOALS:
+1. Explain what different religions teach about a given topic with depth, nuance, and clarity.
+2. Highlight genuine common ground and key differences without exaggeration or bias.
+3. Provide historical, cultural, and rational context for each tradition.
+4. Explain symbolic stories and parables, including their deeper spiritual meaning.
+5. Never promote superiority, hate, division, or proselytizing.
+
+TONE & STYLE:
+- Neutral, calm, and respectful toward all traditions.
+- No preaching, no ranking of religions, no claims of superiority.
+- Use clear, accessible language without oversimplifying complex ideas.
+- Distinguish between:
+  • "This tradition teaches…" (inside view)
+  • "Scholars suggest…" or "Historically, this developed because…" (outside view)
+- Acknowledge internal diversity within each religion when relevant.
+
+ETHICS & SOURCING:
+- Base explanations on primary texts and respected academic sources.
+- Exclude hate-based, supremacist, or polemical sources.
+- Do not present miracles or supernatural claims as proven facts; explain their symbolic or theological meaning.
+- Avoid conspiracy, sensationalism, or fear-based narratives.
+- When quoting scripture, always cite book, chapter, and verse (for example, Matthew 5:44; Qur’an 49:13; Bhagavad Gita 2:20; Guru Granth Sahib, Ang 8).
+- For Christianity, prioritize New Testament references first, and use Old Testament references only when directly relevant.
+
+DEPTH & COMPLETENESS:
+- Prioritize completeness, authenticity, and clarity over brevity or speed.
+- For each major section (core teaching, historical background, cultural context, rational explanation, modern perspectives), write approximately 4–7 sentences with nuance and detail.
+- For denominational or sectarian variations, describe at least 1–2 meaningful differences neutrally.
+- For symbolic stories and parables, include at least one example per religion and clearly unpack its deeper spiritual meaning.
+- If a toggle is false, return "" or [] for that field.
+
+OUTPUT FORMAT:
+Always respond in valid JSON with this exact structure:
+
+{
+  "topic": "<short_topic_name>",
+  "common_ground": ["..."],
+  "key_differences": ["..."],
+  "religions": [
+    {
+      "name": "Christianity",
+      "core_teaching": "...",
+      "key_references": ["..."],
+      "historical_background": "...",
+      "cultural_context": "...",
+      "rational_explanation": "...",
+      "denominational_variations": ["..."],
+      "symbolic_meaning": ["..."],
+      "modern_perspectives": "...",
+      "source_integrity_note": "Based on primary texts and respected academic sources. Excludes polemical or supremacist materials."
+    }
+  ]
+}
+
+RULES:
+- Do NOT include any text outside the JSON.
+- Do NOT change field names.
+- Do NOT add extra top-level fields.
+- If a toggle is false, return "" or [] for that field.
+- Ensure the JSON is valid and complete.
+`;
+
+  // --- UI setup ---
+  const religionsList = [
+    "Christianity",
+    "Islam",
+    "Hinduism",
+    "Buddhism",
+    "Judaism",
+    "Sikhism",
+    "Jainism"
+  ];
+
+  const religionTooltips = {
+    "Christianity": "Teachings based on the life and message of Jesus of Nazareth.",
+    "Islam": "Teachings of the Qur’an and the example of Prophet Muhammad.",
+    "Hinduism": "A diverse family of traditions rooted in dharma, karma, and moksha.",
+    "Buddhism": "Teachings of the Buddha focused on suffering, impermanence, and liberation.",
+    "Judaism": "Teachings of the Torah and the covenantal relationship with God.",
+    "Sikhism": "Teachings of the Sikh Gurus emphasizing devotion, equality, and service.",
+    "Jainism": "Teachings centered on non‑violence, truth, and the liberation of the soul."
+  };
+
+  const selectedReligions = new Set([
+    "Christianity",
+    "Islam",
+    "Hinduism",
+    "Buddhism",
+    "Judaism",
+    "Sikhism",
+    "Jainism"
+  ]);
+
+  const religionPillsEl = document.getElementById("religionPills");
+  const queryInput = document.getElementById("queryInput");
+  const exploreBtn = document.getElementById("exploreBtn");
+  const resultsArea = document.getElementById("resultsArea");
+
+  const toggleHistorical = document.getElementById("toggleHistorical");
+  const toggleCultural = document.getElementById("toggleCultural");
+  const toggleRational = document.getElementById("toggleRational");
+  const toggleDenoms = document.getElementById("toggleDenoms");
+  const toggleSymbolic = document.getElementById("toggleSymbolic");
+  const toggleModern = document.getElementById("toggleModern");
+
+  const darkModeToggle = document.getElementById("darkModeToggle");
+  const whyBtn = document.getElementById("whyBtn");
+  const whyPopup = document.getElementById("whyPopup");
+  const closeWhy = document.getElementById("closeWhy");
+
+  function renderReligionPills() {
+    religionPillsEl.innerHTML = "";
+    religionsList.forEach(name => {
+      const pill = document.createElement("div");
+      pill.className = "pill" + (selectedReligions.has(name) ? " selected" : "");
+      pill.textContent = name;
+      pill.title = religionTooltips[name] || "";
+      pill.tabIndex = 0;
+
+      pill.onclick = () => {
+        if (selectedReligions.has(name)) {
+          if (selectedReligions.size === 1) {
+            alert("At least one tradition must remain selected.");
+            return;
+          }
+          selectedReligions.delete(name);
+        } else {
+          selectedReligions.add(name);
+        }
+        renderReligionPills();
+      };
+
+      pill.onkeydown = (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          pill.click();
+          e.preventDefault();
+        }
+      };
+
+      religionPillsEl.appendChild(pill);
+    });
+  }
+  renderReligionPills();
+
+  function getToggles() {
+    return {
+      historical_background: toggleHistorical.checked,
+      cultural_context: toggleCultural.checked,
+      rational_explanation: toggleRational.checked,
+      denominational_variations: toggleDenoms.checked,
+      symbolic_meaning: toggleSymbolic.checked,
+      modern_perspectives: toggleModern.checked
+    };
+  }
+
+  function showStatus(msg) {
+    const el = document.getElementById("statusArea");
+    if (!el) return;
+    el.textContent = msg;
+    el.style.display = msg ? "inline" : "none";
+  }
+  function hideStatus() {
+    showStatus("");
+  }
+
+  darkModeToggle.onclick = () => {
+    document.body.classList.toggle("dark");
+  };
+
+  whyBtn.onclick = () => {
+    whyPopup.style.display = "block";
+    if (document.body.classList.contains("dark")) {
+      whyPopup.classList.add("dark");
+    } else {
+      whyPopup.classList.remove("dark");
+    }
+  };
+  closeWhy.onclick = () => {
+    whyPopup.style.display = "none";
+  };
+
+  // --- Task prompt builder ---
+  function buildTaskPrompt(query, religions, toggles) {
+    return `
+Topic: ${query}
+
+Religions to include:
+${religions.map(r => "- " + r).join("\n")}
+
+Toggles:
+- historical_background: ${toggles.historical_background}
+- cultural_context: ${toggles.cultural_context}
+- rational_explanation: ${toggles.rational_explanation}
+- denominational_variations: ${toggles.denominational_variations}
+- symbolic_meaning: ${toggles.symbolic_meaning}
+- modern_perspectives: ${toggles.modern_perspectives}
+
+Instructions:
+- Use the JSON schema from the system prompt.
+- For each selected religion, fill in all fields.
+- For each major section, write 4–7 sentences with nuance and detail.
+- If a toggle is false, return "" or [] for that field.
+- Focus on completeness, authenticity, and clarity over brevity.
+- Return only valid JSON, with no extra commentary.
+`;
+  }
+
+  // --- WebLLM integration (Phi-2) ---
+  let interfaithChat = null;
+  let modelLoading = false;
+
+  async function initModelIfNeeded() {
+    if (interfaithChat || modelLoading) return;
+    modelLoading = true;
+    showStatus("Preparing Interfaith’s knowledge engine… this may take a moment.");
+
+    // WebLLM global object is "webllm"
+    // Model name may evolve; this is a typical Phi-2 variant name.
+    interfaithChat = new webllm.ChatModule();
+    // You may need to adjust the model ID if WebLLM changes naming.
+    await interfaithChat.reload("Phi-2-q4f16_1-MLC");
+
+    modelLoading = false;
+    hideStatus();
+  }
+
+  async function generateInterfaithResponse(query, religions, toggles) {
+    await initModelIfNeeded();
+
+    const taskPrompt = buildTaskPrompt(query, religions, toggles);
+
+    const fullPrompt = `
+SYSTEM:
+${systemPrompt}
+
+USER:
+${taskPrompt}
+`;
+
+    // Ask model to produce JSON only
+    const responseText = await interfaithChat.generate(fullPrompt, {
+      temperature: 0.3,
+      max_tokens: 2000
+    });
+
+    // Try to extract JSON (in case of stray text)
+    const jsonMatch = responseText.match(/\{[\s\S]*\}$/);
+    const jsonString = jsonMatch ? jsonMatch[0] : responseText;
+
+    return JSON.parse(jsonString);
+  }
+
+  // --- Fallback example (if model fails) ---
+  function buildStaticFallbackExample(query, religions) {
+    const topic = query || "example_topic";
+    return {
+      topic,
+      common_ground: [
+        "Most of these traditions affirm that human beings possess a fundamental worth or dignity.",
+        "Many emphasize some form of moral or spiritual responsibility that shapes the destiny of the person."
+      ],
+      key_differences: [
+        "They differ on the ultimate goal of human life and the path to that goal.",
+        "They also differ on how revelation, reason, and experience relate to one another."
+      ],
+      religions: religions.map(name => ({
+        name,
+        core_teaching: `This is a placeholder core teaching for ${name} on the topic "${topic}". Once the local model is connected, this section will contain a nuanced, tradition-specific explanation.`,
+        key_references: [
+          "Example reference 1",
+          "Example reference 2"
+        ],
+        historical_background: "",
+        cultural_context: "",
+        rational_explanation: "",
+        denominational_variations: [],
+        symbolic_meaning: [],
+        modern_perspectives: "",
+        source_integrity_note: "Based on primary texts and respected academic sources. Excludes polemical or supremacist materials."
+      }))
+    };
+  }
+
+  // --- Rendering ---
+  function renderResults(data) {
+    resultsArea.innerHTML = "";
+
+    if (!data) return;
+
+    const header = document.createElement("div");
+    header.className = "card";
+    const topicTitle = document.createElement("div");
+    topicTitle.className = "card-header";
+    topicTitle.textContent = `Topic: ${data.topic || "—"}`;
+    header.appendChild(topicTitle);
+
+    if (Array.isArray(data.common_ground) && data.common_ground.length) {
+      const cgLabel = document.createElement("div");
+      cgLabel.className = "section-label";
+      cgLabel.textContent = "Common ground";
+      header.appendChild(cgLabel);
+
+      const cgList = document.createElement("ul");
+      cgList.className = "compact";
+      data.common_ground.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        cgList.appendChild(li);
+      });
+      header.appendChild(cgList);
+    }
+
+    if (Array.isArray(data.key_differences) && data.key_differences.length) {
+      const kdLabel = document.createElement("div");
+      kdLabel.className = "section-label";
+      kdLabel.textContent = "Key differences";
+      header.appendChild(kdLabel);
+
+      const kdList = document.createElement("ul");
+      kdList.className = "compact";
+      data.key_differences.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        kdList.appendChild(li);
+      });
+      header.appendChild(kdList);
+    }
+
+    resultsArea.appendChild(header);
+
+    if (Array.isArray(data.religions)) {
+      data.religions.forEach(rel => {
+        const card = document.createElement("div");
+        card.className = "card religion-card";
+
+        const nameEl = document.createElement("div");
+        nameEl.className = "religion-name";
+        nameEl.textContent = rel.name || "Religion";
+        card.appendChild(nameEl);
+
+        if (rel.core_teaching) {
+          const label = document.createElement("div");
+          label.className = "section-label";
+          label.textContent = "Core teaching";
+          card.appendChild(label);
+
+          const text = document.createElement("p");
+          text.className = "section-text";
+          text.textContent = rel.core_teaching;
+          card.appendChild(text);
+        }
+
+        if (Array.isArray(rel.key_references) && rel.key_references.length) {
+          const label = document.createElement("div");
+          label.className = "section-label";
+          label.textContent = "Key references";
+          card.appendChild(label);
+
+          const list = document.createElement("ul");
+          list.className = "compact";
+          rel.key_references.forEach(ref => {
+            const li = document.createElement("li");
+            li.textContent = ref;
+            list.appendChild(li);
+          });
+          card.appendChild(list);
+        }
+
+        if (rel.historical_background) {
+          const label = document.createElement("div");
+          label.className = "section-label";
+          label.textContent = "Historical background";
+          card.appendChild(label);
+
+          const text = document.createElement("p");
+          text.className = "section-text";
+          text.textContent = rel.historical_background;
+          card.appendChild(text);
+        }
+
+        if (rel.cultural_context) {
+          const label = document.createElement("div");
+          label.className = "section-label";
+          label.textContent = "Cultural context";
+          card.appendChild(label);
+
+          const text = document.createElement("p");
+          text.className = "section-text";
+          text.textContent = rel.cultural_context;
+          card.appendChild(text);
+        }
+
+        if (rel.rational_explanation) {
+          const label = document.createElement("div");
+          label.className = "section-label";
+          label.textContent = "Rational explanation";
+          card.appendChild(label);
+
+          const text = document.createElement("p");
+          text.className = "section-text";
+          text.textContent = rel.rational_explanation;
+          card.appendChild(text);
+        }
+
+        if (Array.isArray(rel.denominational_variations) && rel.denominational_variations.length) {
+          const label = document.createElement("div");
+          label.className = "section-label";
+          label.textContent = "Denominational variations";
+          card.appendChild(label);
+
+          const list = document.createElement("ul");
+          list.className = "compact";
+          rel.denominational_variations.forEach(item => {
+            const li = document.createElement("li");
+            li.textContent = item;
+            list.appendChild(li);
+          });
+          card.appendChild(list);
+        }
+
+        if (Array.isArray(rel.symbolic_meaning) && rel.symbolic_meaning.length) {
+          const label = document.createElement("div");
+          label.className = "section-label";
+          label.textContent = "Symbolic meaning";
+          card.appendChild(label);
+
+          const list = document.createElement("ul");
+          list.className = "compact";
+          rel.symbolic_meaning.forEach(item => {
+            const li = document.createElement("li");
+            li.textContent = item;
+            list.appendChild(li);
+          });
+          card.appendChild(list);
+        }
+
+        if (rel.modern_perspectives) {
+          const label = document.createElement("div");
+          label.className = "section-label";
+          label.textContent = "Modern perspectives";
+          card.appendChild(label);
+
+          const text = document.createElement("p");
+          text.className = "section-text";
+          text.textContent = rel.modern_perspectives;
+          card.appendChild(text);
+        }
+
+        if (rel.source_integrity_note) {
+          const label = document.createElement("div");
+          label.className = "section-label";
+          label.textContent = "Source integrity";
+          card.appendChild(label);
+
+          const text = document.createElement("p");
+          text.className = "section-text";
+          text.textContent = rel.source_integrity_note;
+          card.appendChild(text);
+        }
+
+        resultsArea.appendChild(card);
+      });
+    }
+
+    resultsArea.classList.add("fade-in");
+    setTimeout(() => resultsArea.classList.remove("fade-in"), 400);
+  }
+
+  // --- Explore button handler ---
+  exploreBtn.onclick = async () => {
+    const query = (queryInput.value || "").trim();
+    if (!query) {
+      alert("Please enter a question or topic.");
+      return;
+    }
+
+    if (selectedReligions.size === 0) {
+      selectedReligions.add("Christianity");
+      renderReligionPills();
+    }
+    const religions = Array.from(selectedReligions);
+    const toggles = getToggles();
+
+    exploreBtn.disabled = true;
+    showStatus("Thinking deeply about your question…");
+
+    try {
+      const data = await generateInterfaithResponse(query, religions, toggles);
+      hideStatus();
+      renderResults(data);
+    } catch (err) {
+      console.error(err);
+      hideStatus();
+      alert("The model had trouble generating a response. Showing a reference-style example instead.");
+      const fallback = buildStaticFallbackExample(query, religions);
+      renderResults(fallback);
+    } finally {
+      exploreBtn.disabled = false;
+    }
+  };
+</script>
+</body>
+</html>
